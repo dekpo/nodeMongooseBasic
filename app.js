@@ -32,7 +32,7 @@ app.get('/api', ( request , response ) => {
     console.log( request.query );
     // on définit une limite à partir d'une variable limit provenant de l'URL
     // avec une condition pour éviter de déclencher une erreur si la variable n'existe pas
-    const limit = request.query.limit ? parseInt( request.query.limit ) : 10;
+    const limit = request.query.limit ? parseInt( request.query.limit ) : 30;
     console.log( limit );
     // même chose pour une variable skip
     const skip = request.query.skip ? parseInt( request.query.skip ) : 0;
@@ -40,8 +40,12 @@ app.get('/api', ( request , response ) => {
     // même chose pour une variable q qui est redéfinie en expression régulière
     const q = request.query.q ? new RegExp( '^' + request.query.q ) : new RegExp('^a');
     console.log( q );
-    // on effetue une autre recherche avec find et les méthodes connues de MongoDB
-    const listing = myModel.find({name:q},{_id:1,name:1,listing_url:1}).skip(skip).limit( limit ).sort({_id:1});
+    const q2 = request.query.q ? new RegExp( request.query.q ) : new RegExp('a');
+    console.log( q2 );
+    // on définie une condition pour rechercher les éventuelles termes q dans name et dans summary
+    const condition = {$or:[ { name:q },{ summary:q2 } ]};
+    // on effetue une recherche avec find et les méthodes connues de MongoDB
+    const listing = myModel.find(condition,{_id:1,name:1,listing_url:1,summary:1,address:1}).skip(skip).limit( limit ).sort({_id:1});
 
     listing.exec( (err, result) => {
         response.send( result );
