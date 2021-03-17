@@ -25,13 +25,25 @@ const count = myModel.find().countDocuments();
 count.exec((err,result)=>{
     console.log('Result Count:', result);
 });
-// on effetue une autre recherche avec find et les méthodes connues de MongoDB
-const listing = myModel.find({name:/a/},{_id:1,name:1,listing_url:1}).skip(10).limit(20).sort({_id:1});
 // on affiche les résultats de la requete Mongo sur le serveur Express
 // à l'adresse /api
 app.get('/api', ( request , response ) => {
+    // on affiche dans la console les variables provenant de l'URL
+    console.log( request.query );
+    // on définit une limite à partir d'une variable limit provenant de l'URL
+    // avec une condition pour éviter de déclencher une erreur si la variable n'existe pas
+    const limit = request.query.limit ? parseInt( request.query.limit ) : 10;
+    console.log( limit );
+    // même chose pour une variable skip
+    const skip = request.query.skip ? parseInt( request.query.skip ) : 0;
+    console.log( skip );
+    // même chose pour une variable q qui est redéfinie en expression régulière
+    const q = request.query.q ? new RegExp( '^' + request.query.q ) : new RegExp('^a');
+    console.log( q );
+    // on effetue une autre recherche avec find et les méthodes connues de MongoDB
+    const listing = myModel.find({name:q},{_id:1,name:1,listing_url:1}).skip(skip).limit( limit ).sort({_id:1});
+
     listing.exec( (err, result) => {
         response.send( result );
-        console.log( result );
     });
 });
