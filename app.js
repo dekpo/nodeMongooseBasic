@@ -1,7 +1,9 @@
 // on importe le module mongoose
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose'); // import CommonJS
+import mongoose from 'mongoose';  // import ES6
 // on importe Express pour servir les résultats en http
-const express = require('express');
+//const express = require('express');  // import CommonJS
+import express from 'express'; // import ES6
 // on utilise Express sur le port 3000
 const app = express();
 app.listen(3000);
@@ -25,9 +27,40 @@ const count = myModel.find().countDocuments();
 count.exec((err,result)=>{
     console.log('Result Count:', result);
 });
+
+// Je veux récupérer des infos du client :
+    // rawHeaders => OS et du navigateur
+    // url => tout le parcours depuis la racine du serveur
+    // query => les params dans mon url
+    // ajouter la date et l'heure dans mon enregistrement
+    // on va sauvegarder ces infos dans une collection requestFromUsers
+    // création du Schema
+    const RequestSchema = new mongoose.Schema({
+        rawHeaders: Array,
+        url: String,
+        query: Object,
+        date: {
+            type: Date,
+            default: Date.now
+        }
+    });
+    // création du Model
+    const RequestModel = mongoose.model('request',RequestSchema,'requestFromUsers');
+
 // on affiche les résultats de la requete Mongo sur le serveur Express
 // à l'adresse /api
 app.get('/api', ( request , response ) => {
+
+    // console.log('REQUEST DU NAVIGATEUR CLIENT:', request);
+    
+    // instanciation de mon model
+    let newRequest = new RequestModel( request );
+    // on sauvegarde
+    newRequest.save( (err,data) => {
+        if (err) console.log(err);
+        console.log('Request Saved: ', data );
+    });
+
     // on affiche dans la console les variables provenant de l'URL
     console.log( request.query );
     // on définit une limite à partir d'une variable limit provenant de l'URL
